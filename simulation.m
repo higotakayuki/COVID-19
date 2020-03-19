@@ -1,7 +1,7 @@
 function simulation
 flag_gpu_on=true;
 infection_days=10;
-connection_type=2;
+connection_type=1;
 
 I=300;
 J=300;
@@ -31,8 +31,7 @@ infected=state~=0 & state~=infection_days;
 
 for t=1:max_days
     state(floor(I/2),floor(J/2))=1;
-    tmp=arrayfun(@update,rows2d,cols2d);
-    state(rows,cols)=tmp;
+    state(rows,cols)=arrayfun(@update,rows2d,cols2d);
     state(infection_days<state)=infection_days;
     infected=state~=0 & state~=infection_days;
     total_num_carrier(t)=sum(infected,'all')-1;
@@ -51,13 +50,15 @@ for t=1:max_days
     drawnow
     
     %%
-    F=getframe(1);
-    [X,map]=rgb2ind(F.cdata,256);
-    out_filename=sprintf('anim%d.gif',connection_type);
-    if t==1
-        imwrite(X,map,out_filename,'DelayTime',0.1)
-    else
-        imwrite(X,map,out_filename,'WriteMode','append','DelayTime',0.1)
+    if false
+        F=getframe(1);
+        [X,map]=rgb2ind(F.cdata,256);
+        out_filename=sprintf('anim%d.gif',connection_type);
+        if t==1
+            imwrite(X,map,out_filename,'DelayTime',0.1)
+        else
+            imwrite(X,map,out_filename,'WriteMode','append','DelayTime',0.1)
+        end
     end
     if 100<t && total_num_carrier(t)==0,break;end
 end
@@ -66,8 +67,8 @@ end
         if state(i,j)==0
             num_infected1=infected(i-1,j)+infected(i,j-1)+infected(i,j+1)+infected(i+1,j);
             num_infected2=infected(i-1,j-1)+infected(i-1,j+1)+infected(i+1,j-1)+infected(i+1,j+1);
-%             num_infected=num_infected1;
-            num_infected=num_infected1+num_infected2;
+            num_infected=num_infected1;
+%             num_infected=num_infected1+num_infected2;
             flag_infected=(1-infection_probability).^num_infected<rand();
             ret=int8(flag_infected);
         else
